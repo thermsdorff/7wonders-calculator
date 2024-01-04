@@ -1,0 +1,5 @@
+{
+  "directory": ["./entities", "./components"],
+  "singleQuotes": true,
+  "delete": true
+}

@@ -1,88 +1,59 @@
-import React from "react";
-import { StyleSheet } from "react-native";
+import "reflect-metadata";
+import React, { useEffect } from "react";
+import { LogBox } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { PaperProvider } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { Home } from "./pages/Homepage";
-import { PlayersList } from "./pages/Players";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { theme } from "./config/theme";
-import { Settings } from "./pages/Settings";
+import db from "./services/database";
+import { Home } from "./pages/Homepage";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+import { GameConfig } from "./pages/GameConfig";
+import { GameCounter } from "./pages/GameCounter";
+
+LogBox.ignoreLogs(["Require cycle:", "`new NativeEventEmitter()`"]);
 
 const Stack = createNativeStackNavigator();
 
-const Tab = createBottomTabNavigator();
+const App = () => {
+  useEffect(() => {
+    const initDB = async () => {
+      try {
+        await db.initialize();
+      } catch (e) {
+        console.log(e);
+      }
+    };
 
-const App = () => (
-  <PaperProvider theme={theme}>
-    <NavigationContainer>
-      {/* <NavigationContainer>
-      <Stack.Navigator>
-      <Stack.Screen
-      name="Home"
-      component={Home}
-          options={{ headerShown: false }}
-          />
-          <Stack.Screen
-          name="Players"
-          component={PlayersList}
-          options={{ title: "Liste des joueurs" }}
-          />
-          <Stack.Screen
-          name="PlayerForm"
-          component={PlayerForm}
-          options={{ title: "Ajouter un joueur" }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer> */}
-      <Tab.Navigator
-        backBehavior="history"
-        screenOptions={{ tabBarStyle: styles.bar }}
-      >
-        <Tab.Screen
-          name="home"
-          options={{
-            headerShown: false,
-            tabBarLabel: "Accueil",
-            tabBarIcon: ({ color, size }) => {
-              return <Icon name="home" size={size} color={color} />;
-            },
-          }}
-          component={Home}
-        />
-        <Tab.Screen
-          name="players"
-          options={{
-            title: "Joueurs",
-            tabBarLabel: "Joueurs",
-            tabBarIcon: ({ color, size }) => {
-              return <Icon name="people" size={size} color={color} />;
-            },
-          }}
-          component={PlayersList}
-        />
-        <Tab.Screen
-          name="settings"
-          options={{
-            title: "Paramètres",
-            tabBarLabel: "Paramètres",
-            tabBarIcon: ({ color, size }) => {
-              return <Icon name="settings" size={size} color={color} />;
-            },
-          }}
-          component={Settings}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
-  </PaperProvider>
-);
+    initDB();
+  });
 
-const styles = StyleSheet.create({
-  bar: {
-    paddingTop: 4,
-    paddingBottom: 8,
-  },
-});
+  return (
+    <Provider store={store}>
+      <PaperProvider theme={theme}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Home"
+              component={Home}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="GameConfig"
+              component={GameConfig}
+              options={{ title: "Configuration de la partie" }}
+            />
+            <Stack.Screen
+              name="GameCounter"
+              component={GameCounter}
+              options={{ title: "Compeur de partie" }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PaperProvider>
+    </Provider>
+  );
+};
 
 export default App;
